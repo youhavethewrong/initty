@@ -1,24 +1,49 @@
 (ns initty.events
-    (:require [re-frame.core :as re-frame]
-              [initty.db :as db]))
+  (:require [re-frame.core :as re-frame]
+            [initty.db :as db]))
 
 (re-frame/reg-event-db
  :initialize-db
  (fn  [_ _]
-   db/default-db))
+   (let [d db/default-db]
+     (update-in d [:encounter :actors]
+      (fn [a] (reverse (sort-by :init a)))))))
 
 (re-frame/reg-event-db
  :set-active-panel
  (fn [db [_ active-panel]]
    (assoc db :active-panel active-panel)))
 
+(defn- update-status
+  [actor]
+  (-> actor
+      (update :status #(map (fn [s] (update s :duration dec)) %))
+      (update :status #(filter (fn [s] (> (:duration s) 0)) %))))
+
 (re-frame/reg-event-db
  :forward-round
  (fn [db [_ _]]
-   (let [t (:actors (:encounter db))
-         last-actor (first (sort-by #(:init %) t))
-         new-order (conj (butlast t) (last t))
-         db (if (= (last new-order) last-actor)
-              (update-in db [:encounter :rounds] inc)
+   (let [actors (:actors (:encounter db))
+         _ (println "actors are now" actors)
+         sorted (sort-by #(:init %) actors)
+         last-actor (first sorted)
+         current-actor (first (filter #(= "🎲" (:turn %)) actors))
+         grouped (group-by #(> (:init current-actor) (:init %)) (reverse sorted))
+         next-actor (first (get grouped true))
+         next-actor (if-not next-actor (first (get grouped false)) next-actor)
+         round-end (= current-actor last-actor)
+         db (if round-end
+              (-> db
+                (update-in [:encounter :rounds] inc)
+                (update-in [:encounter :actors] #(map update-status %)))
               db)]
-     (assoc-in db [:encounter :actors] new-order))))
+     (-> db
+         (update-in [:encounter :actors] #(map (fn [a] (if (= (:name current-actor) (:name a)) (assoc a :turn "") a)) %))
+         (update-in [:encounter :actors] #(map (fn [a] (if (= (:name next-actor) (:name a)) (assoc a :turn "🎲") a)) %))))))
+
+(re-frame/reg-event-db
+ :add-actor
+ (fn [db [_ ba]]
+   (-> db
+       (update-in [:encounter :actors] #(conj % ba))
+       (update-in [:encounter :actors] #(reverse (sort-by :init %))))))

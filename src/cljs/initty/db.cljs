@@ -3,11 +3,10 @@
 (def default-db
   {:encounter {:rounds 1
                :actors
-               [{:name "Yamamoto" :init 21 :status []}
-                {:name "Fayruz" :init 27 :status []}
-                {:name "Augustus" :init 12 :status []}
-                {:name "Kortahl" :init 13 :status []}
-                {:name "Galion" :init 16 :status []}
-                {:name "Lochlin" :init 22 :status []}
-                {:name "Goblin 1" :init 19:status []}]
-               }})
+               [{:name "Yamamoto" :turn "" :init 21 :status [{:name "Blind" :duration 2}]}
+                {:name "Fayruz" :turn "🎲" :init 27 :status []}
+                {:name "Augustus" :turn "" :init 12 :status []}
+                {:name "Kortahl" :turn "" :init 13 :status []}
+                {:name "Galion" :turn "" :init 16 :status []}
+                {:name "Lochlin" :turn "" :init 22 :status []}
+                {:name "Goblin 1" :turn "" :init 19 :status []}]}})
