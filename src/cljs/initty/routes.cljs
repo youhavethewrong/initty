@@ -21,9 +21,11 @@
   (defroute "/" []
     (re-frame/dispatch [:set-active-panel :home-panel]))
 
-  (defroute "/add" []
-    (re-frame/dispatch [:set-active-panel :add-panel]))
+  (defroute "/character" []
+    (re-frame/dispatch [:set-active-panel :add-character-panel]))
 
+  (defroute "/status" []
+    (re-frame/dispatch [:set-active-panel :add-status-panel]))
 
   ;; --------------------
   (hook-browser-navigation!))

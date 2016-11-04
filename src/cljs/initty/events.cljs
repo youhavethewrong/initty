@@ -24,7 +24,6 @@
  :forward-round
  (fn [db [_ _]]
    (let [actors (:actors (:encounter db))
-         _ (println "actors are now" actors)
          sorted (sort-by #(:init %) actors)
          last-actor (first sorted)
          current-actor (first (filter #(= "🎲" (:turn %)) actors))
@@ -47,3 +46,12 @@
    (-> db
        (update-in [:encounter :actors] #(conj % ba))
        (update-in [:encounter :actors] #(reverse (sort-by :init %))))))
+
+(re-frame/reg-event-db
+ :add-status
+ (fn [db [_ {:keys [character status]}]]
+   (update-in db [:encounter :actors] (fn [actors]
+                                        (map #(if (= character (:name %))
+                                                (update % :status conj status)
+                                                %)
+                                             actors)))))
