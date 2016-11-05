@@ -56,6 +56,18 @@
                                                 %)
                                              actors)))))
 
+(defn- clear-status-from-actor
+  [status actor]
+  (update actor :status (fn [statuses] (filter #(not= status (:name %)) statuses))))
+
+(re-frame/reg-event-db
+ :remove-status
+ (fn [db [_ {:keys [character status]}]]
+   (update-in db [:encounter :actors] (fn [actors]
+                                        (map
+                                         #(if (= character (:name %)) (clear-status-from-actor status %) %)
+                                         actors)))))
+
 (re-frame/reg-event-db
  :remove-actor
  (fn [db [_ ba]]

@@ -27,8 +27,11 @@
   (defroute "/character/remove" []
     (re-frame/dispatch [:set-active-panel :remove-character-panel]))
 
-  (defroute "/status" []
+  (defroute "/status/add" []
     (re-frame/dispatch [:set-active-panel :add-status-panel]))
+
+  (defroute "/status/remove" []
+    (re-frame/dispatch [:set-active-panel :remove-status-panel]))
 
   ;; --------------------
   (hook-browser-navigation!))

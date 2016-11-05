@@ -35,7 +35,12 @@
 (defn link-to-add-status-page []
   [re-com/hyperlink-href
    :label "Add status"
-   :href "#/status"])
+   :href "#/status/add"])
+
+(defn link-to-remove-status-page []
+  [re-com/hyperlink-href
+   :label "Remove status"
+   :href "#/status/remove"])
 
 (defn link-to-home-page []
   [re-com/hyperlink-href
@@ -57,7 +62,8 @@
                              :on-click #(re-frame/dispatch [:forward-round])]
                             [link-to-add-character-page]
                             [link-to-remove-character-page]
-                            [link-to-add-status-page]]]]]))
+                            [link-to-add-status-page]
+                            [link-to-remove-status-page]]]]]))
 
 (defn home-panel []
   [re-com/v-box
@@ -184,6 +190,56 @@
                :label "Select a character to remove"
                :level :level1]
               [remove-character-body]]])
+
+;; remove status
+(defn remove-status-body
+  []
+  (let [encounter (re-frame/subscribe [:encounter])
+        character-val (reagent/atom nil)
+        char-statuses (reagent/atom [])
+        status-val (reagent/atom nil)]
+    [re-com/h-box
+     :gap "2em"
+     :children [[re-com/v-box
+                 :children [[re-com/title
+                             :label "Character"]
+                            [re-com/single-dropdown
+                             :width "14em"
+                             :choices (:actors @encounter)
+                             :id-fn :name
+                             :label-fn :name
+                             :model character-val
+                             :on-change (fn [name]
+                                          (let [_ (reset! character-val name)
+                                                a (filter #(= @character-val (:name %)) (:actors @encounter))
+                                                statuses (or (:status (first a)) [])]
+                                            (reset! char-statuses statuses)))]
+                            [re-com/title
+                             :label "Status"]
+                            [re-com/single-dropdown
+                             :width "14em"
+                             :choices char-statuses
+                             :id-fn :name
+                             :label-fn :name
+                             :model status-val
+                             :on-change #(reset! status-val %)]]]
+                [re-com/v-box
+                 :gap "2em"
+                 :children [[re-com/button
+                             :label "Remove status"
+                             :on-click #(re-frame/dispatch [:remove-status {:character @character-val
+                                                                            :status @status-val}])]
+                            [link-to-home-page]]]]]))
+
+(defn remove-status-panel []
+  [re-com/v-box
+   :gap "2em"
+   :align :center
+   :children [[re-com/title
+               :label "Select status to remove from a character"
+               :level :level1]
+              [remove-status-body]]])
+
 ;; main
 
 (defmulti panels identity)
@@ -191,6 +247,7 @@
 (defmethod panels :add-character-panel [] [add-character-panel])
 (defmethod panels :add-status-panel [] [add-status-panel])
 (defmethod panels :remove-character-panel [] [remove-character-panel])
+(defmethod panels :remove-status-panel [] [remove-status-panel])
 (defmethod panels :default [] [:div])
 
 (defn show-panel
