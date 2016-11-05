@@ -3,12 +3,6 @@
             [re-com.core :as re-com]
             [reagent.core :as reagent]))
 
-;; home
-
-(defn home-title []
-  [re-com/title
-   :label "initty"
-   :level :level1])
 
 (defn- display-actor
   [{:keys [name init status turn]}]
@@ -22,15 +16,31 @@
   [actors]
   (map display-actor actors))
 
+;; home
+(defn home-title []
+  [re-com/title
+   :label "initty"
+   :level :level1])
+
 (defn link-to-add-character-page []
   [re-com/hyperlink-href
    :label "Add character"
-   :href "#/character"])
+   :href "#/character/add"])
+
+(defn link-to-remove-character-page []
+  [re-com/hyperlink-href
+   :label "Remove character"
+   :href "#/character/remove"])
 
 (defn link-to-add-status-page []
   [re-com/hyperlink-href
    :label "Add status"
    :href "#/status"])
+
+(defn link-to-home-page []
+  [re-com/hyperlink-href
+   :label "back to Home"
+   :href "#/"])
 
 (defn home-body
   []
@@ -42,11 +52,11 @@
                  :children [[:ul [:h3 (str "Round " (:rounds @encounter))]
                              (display-actors (:actors @encounter))]]]
                 [re-com/v-box
-                 :gap "1em"
                  :children [[re-com/button
                              :label "Next"
                              :on-click #(re-frame/dispatch [:forward-round])]
                             [link-to-add-character-page]
+                            [link-to-remove-character-page]
                             [link-to-add-status-page]]]]]))
 
 (defn home-panel []
@@ -56,18 +66,7 @@
    :children [[home-title]
               [home-body]]])
 
-;; add
-
-(defn add-title []
-  [re-com/title
-   :label "Add character to the encounter"
-   :level :level1])
-
-(defn link-to-home-page []
-  [re-com/hyperlink-href
-   :label "back to Home"
-   :href "#/"])
-
+;; add character
 (defn add-character-body
   []
   (let [base-actor (reagent/atom {:name ""
@@ -102,9 +101,10 @@
   [re-com/v-box
    :gap "2em"
    :align :center
-   :children [[add-title]
+   :children [[re-com/title :label "Add character to the encounter" :level :level1]
               [add-character-body]]])
 
+;; add status
 (defn add-status-body
   []
   (let [encounter (re-frame/subscribe [:encounter])
@@ -152,13 +152,45 @@
                :level :level1]
               [add-status-body]]])
 
+;; remove actor
+(defn remove-character-body
+  []
+  (let [encounter (re-frame/subscribe [:encounter])
+        character-val (reagent/atom nil)]
+    [re-com/h-box
+     :gap "2em"
+     :children [[re-com/v-box
+                 :children [[re-com/title
+                             :label "Character"]
+                            [re-com/single-dropdown
+                             :width "14em"
+                             :choices (:actors @encounter)
+                             :id-fn :name
+                             :label-fn :name
+                             :model character-val
+                             :on-change #(reset! character-val %)]]]
+                [re-com/v-box
+                 :gap "2em"
+                 :children [[re-com/button
+                             :label "Remove character"
+                             :on-click #(re-frame/dispatch [:remove-actor @character-val])]
+                            [link-to-home-page]]]]]))
 
+(defn remove-character-panel []
+  [re-com/v-box
+   :gap "2em"
+   :align :center
+   :children [[re-com/title
+               :label "Select a character to remove"
+               :level :level1]
+              [remove-character-body]]])
 ;; main
 
 (defmulti panels identity)
 (defmethod panels :home-panel [] [home-panel])
 (defmethod panels :add-character-panel [] [add-character-panel])
 (defmethod panels :add-status-panel [] [add-status-panel])
+(defmethod panels :remove-character-panel [] [remove-character-panel])
 (defmethod panels :default [] [:div])
 
 (defn show-panel

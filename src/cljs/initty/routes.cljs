@@ -21,8 +21,11 @@
   (defroute "/" []
     (re-frame/dispatch [:set-active-panel :home-panel]))
 
-  (defroute "/character" []
+  (defroute "/character/add" []
     (re-frame/dispatch [:set-active-panel :add-character-panel]))
+
+  (defroute "/character/remove" []
+    (re-frame/dispatch [:set-active-panel :remove-character-panel]))
 
   (defroute "/status" []
     (re-frame/dispatch [:set-active-panel :add-status-panel]))

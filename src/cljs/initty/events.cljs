@@ -55,3 +55,10 @@
                                                 (update % :status conj status)
                                                 %)
                                              actors)))))
+
+(re-frame/reg-event-db
+ :remove-actor
+ (fn [db [_ ba]]
+   (let [a (get-in db [:encounter :actors])
+         a' (filter #(not= ba (:name %)) a)]
+     (assoc-in db [:encounter :actors] a'))))
