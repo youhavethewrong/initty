@@ -7,7 +7,7 @@
  (fn  [_ _]
    (let [d db/default-db]
      (update-in d [:encounter :actors]
-      (fn [a] (reverse (sort-by :init a)))))))
+      (fn [a] (reverse (sort-by (fn [x] [(:init x) (:name x)]) a)))))))
 
 (re-frame/reg-event-db
  :set-active-panel
@@ -24,12 +24,14 @@
  :forward-round
  (fn [db [_ _]]
    (let [actors (:actors (:encounter db))
-         sorted (sort-by #(:init %) actors)
-         last-actor (first sorted)
-         current-actor (first (filter #(= "🎲" (:turn %)) actors))
-         grouped (group-by #(> (:init current-actor) (:init %)) (reverse sorted))
-         next-actor (first (get grouped true))
-         next-actor (if-not next-actor (first (get grouped false)) next-actor)
+         {me true them false} (group-by #(= "🎲" (:turn %)) actors)
+         last-actor (first (sort-by :init actors))
+         current-actor (first me)
+         grouped (group-by #(compare (:init current-actor) (:init %)) them)
+         same-init (group-by #(compare (:name current-actor) (:name %)) (get grouped 0))
+         next-actor (or (first (get same-init 1))
+                        (first (get grouped 1))
+                        (first (get grouped -1)))
          round-end (= current-actor last-actor)
          db (if round-end
               (-> db
@@ -45,7 +47,7 @@
  (fn [db [_ ba]]
    (-> db
        (update-in [:encounter :actors] #(conj % ba))
-       (update-in [:encounter :actors] #(reverse (sort-by :init %))))))
+       (update-in [:encounter :actors] #(reverse (sort-by (fn [x] [(:init x) (:name x)]) %))))))
 
 (re-frame/reg-event-db
  :add-status
