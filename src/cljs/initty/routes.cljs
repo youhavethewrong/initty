@@ -16,13 +16,14 @@
 
 (defn app-routes []
   (secretary/set-config! :prefix "#")
-  ;; --------------------
-  ;; define routes here
   (defroute "/" []
     (re-frame/dispatch [:set-active-panel :home-panel]))
 
   (defroute "/character/add" []
     (re-frame/dispatch [:set-active-panel :add-character-panel]))
+
+  (defroute "/character/edit" []
+    (re-frame/dispatch [:set-active-panel :edit-character-panel]))
 
   (defroute "/character/remove" []
     (re-frame/dispatch [:set-active-panel :remove-character-panel]))
@@ -33,5 +34,4 @@
   (defroute "/status/remove" []
     (re-frame/dispatch [:set-active-panel :remove-status-panel]))
 
-  ;; --------------------
   (hook-browser-navigation!))
