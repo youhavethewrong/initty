@@ -5,19 +5,24 @@
 ;;;;;;;;;;;;;;;;;;;
 ;; local helpers ;;
 ;;;;;;;;;;;;;;;;;;;
-
-(defn- local-store
-  [store key value]
-  (.setItem store (clj->js key) (clj->js value)))
-
 (defn- local-load
   [store key]
   (if-let [stored-val (.getItem store (clj->js key))]
-    (js->clj stored-val :keywordize-keys true)))
+    (do
+      (println "Stored val is" stored-val)
+      (js->clj (.parse js/JSON stored-val) :keywordize-keys true))))
+
+(defn- local-store
+  [store key value]
+  (let [k (clj->js key)]
+    (.setItem store k (.stringify js/JSON (clj->js value)))))
 
 (defn- store-actors
   [{:keys [encounter] :as db}]
-  (if-let [actors (:actors encounter)]
+  (let [actors (map
+                (fn [{:keys [name init]}]
+                  {:name name :init init})
+                (:actors encounter))]
     (local-store js/localStorage :actors actors)))
 
 (defn- load-actors
@@ -73,16 +78,25 @@
          (update-in [:encounter :actors] #(map (fn [a] (if (= (:name next-actor) (:name a)) (assoc a :turn "🎲") a)) %))))))
 
 (re-frame/reg-event-db
+ :reset-encounter
+ (fn [db _]
+   (-> db
+       (update-in [:encounter :actors] #(map (fn [a] (assoc a :turn "" :status [])) %))
+       (assoc-in [:encounter :rounds] 1))))
+
+(re-frame/reg-event-db
  :load
  (fn [db _]
    (if-let [actors (load-actors)]
-     (assoc db :actors actors)
-     (assoc db :actors []))))
+     (do
+       (assoc-in db [:encounter :actors] actors))
+     db)))
 
 (re-frame/reg-event-db
  :store
  (fn [db _]
-   (store-actors (:actors db))))
+   (store-actors db)
+   db))
 
 (re-frame/reg-event-db
  :add-actor
@@ -93,9 +107,9 @@
 
 (re-frame/reg-event-db
  :save-actor
- (fn [db [_ on ba]]
+ (fn [db [_ ba]]
    (-> db
-       (update-in [:encounter :actors] #(map (fn [a] (if (= on (:name a)) ba a)) %))
+       (update-in [:encounter :actors] #(map (fn [a] (if (= (:name ba) (:name a)) ba a)) %))
        (update-in [:encounter :actors] #(reverse (sort-by (fn [x] [(:init x) (:name x)]) %))))))
 
 (re-frame/reg-event-db

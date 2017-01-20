@@ -53,20 +53,27 @@
                              (display-actors (:actors @encounter))]]]
                 [re-com/v-box
                  :children [[re-com/title :label "Turn" :level :level2]
-                            [re-com/button
-                             :label "Advance"
-                             :on-click #(re-frame/dispatch [:forward-round])]
+                            [re-com/h-box
+                             :children [[re-com/button
+                                         :label "Advance"
+                                         :on-click #(re-frame/dispatch [:forward-round])]
+                                        [re-com/button
+                                         :label "Reset"
+                                         :on-click #(re-frame/dispatch [:reset-encounter])]]]
                             [re-com/title :label "Modify" :level :level2]
                             (make-link "character" "add")
+                            (make-link "character" "edit")
                             (make-link "character" "remove")
                             (make-link "status" "add")
                             (make-link "status" "remove")
-                            [re-com/button
-                             :label "Load"
-                             :on-click #(re-frame/dispatch [:load])]
-                            [re-com/button
-                             :label "Store"
-                             :on-click #(re-frame/dispatch [:store])]]]]]))
+                            [re-com/title :label "Load/Store characters" :level :level2]
+                            [re-com/h-box
+                             :children [[re-com/button
+                                         :label "Load"
+                                         :on-click #(re-frame/dispatch [:load])]
+                                        [re-com/button
+                                         :label "Store"
+                                         :on-click #(re-frame/dispatch [:store])]]]]]]]))
 
 (defn home-panel []
   [re-com/v-box
@@ -147,9 +154,7 @@
 (defn edit-character-body
   []
   (let [encounter (re-frame/subscribe [:encounter])
-        old-name (reagent/atom "")
         character-val (reagent/atom nil)
-        name-val ""
         init-val ""]
     [re-com/h-box
      :gap "2em"
@@ -162,25 +167,19 @@
                              :id-fn :name
                              :label-fn :name
                              :model character-val
-                             :on-change #(reset! character-val %)]
+                             :on-change #(reset! character-val (first (filter (fn [a] (= (:name a) %)) (:actors @encounter))))]
                             [re-com/v-box
                              :children [[re-com/title
-                                         :label "Name"]
-                                        [re-com/input-text
-                                         :model name-val
-                                         :on-change (fn [new-n]
-                                                      (swap! character-val (fn [ba n] (reset! old-name (:name ba)) (assoc ba :name n)) new-n))]
-                                        [re-com/title
                                          :label "Initiative"]
                                         [re-com/input-text
                                          :model init-val
-                                         :on-change #(swap! character-val (fn [ba n] (assoc ba :init (js/parseInt n))) %)
-                                         :validation-regex #"^(\d{0,2})$"]]]]]
+                                         :on-change (fn [i] (swap! character-val #(assoc % :init (js/parseInt i))))
+                                         :validation-regex #"^(\d{0,3})$"]]]]]
                 [re-com/v-box
                  :gap "2em"
                  :children [[re-com/button
                              :label "Save character"
-                             :on-click #(re-frame/dispatch [:save-actor @old-name @character-val])]
+                             :on-click #(re-frame/dispatch [:save-actor @character-val])]
                             [link-to-home-page]]]]]))
 
 (defn remove-character-body
