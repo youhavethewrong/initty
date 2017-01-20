@@ -154,8 +154,8 @@
 (defn edit-character-body
   []
   (let [encounter (re-frame/subscribe [:encounter])
-        character-val (reagent/atom nil)
-        init-val ""]
+        character-val (reagent/atom "")
+        init-val (reagent/atom "")]
     [re-com/h-box
      :gap "2em"
      :children [[re-com/v-box
@@ -166,20 +166,21 @@
                              :choices (:actors @encounter)
                              :id-fn :name
                              :label-fn :name
+                             :placeholder "Select a character"
                              :model character-val
-                             :on-change #(reset! character-val (first (filter (fn [a] (= (:name a) %)) (:actors @encounter))))]
+                             :on-change #(reset! character-val %)]
                             [re-com/v-box
                              :children [[re-com/title
                                          :label "Initiative"]
                                         [re-com/input-text
                                          :model init-val
-                                         :on-change (fn [i] (swap! character-val #(assoc % :init (js/parseInt i))))
-                                         :validation-regex #"^(\d{0,3})$"]]]]]
+                                         :on-change #(reset! init-val %)
+                                         :validation-regex #"^(\d{0,2})$"]]]]]
                 [re-com/v-box
                  :gap "2em"
                  :children [[re-com/button
                              :label "Save character"
-                             :on-click #(re-frame/dispatch [:save-actor @character-val])]
+                             :on-click #(re-frame/dispatch [:save-actor @character-val (js/parseInt@init-val)])]
                             [link-to-home-page]]]]]))
 
 (defn remove-character-body

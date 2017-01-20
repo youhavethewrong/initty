@@ -8,9 +8,7 @@
 (defn- local-load
   [store key]
   (if-let [stored-val (.getItem store (clj->js key))]
-    (do
-      (println "Stored val is" stored-val)
-      (js->clj (.parse js/JSON stored-val) :keywordize-keys true))))
+    (js->clj (.parse js/JSON stored-val) :keywordize-keys true)))
 
 (defn- local-store
   [store key value]
@@ -107,9 +105,9 @@
 
 (re-frame/reg-event-db
  :save-actor
- (fn [db [_ ba]]
+ (fn [db [_ name init]]
    (-> db
-       (update-in [:encounter :actors] #(map (fn [a] (if (= (:name ba) (:name a)) ba a)) %))
+       (update-in [:encounter :actors] #(map (fn [a] (if (= name (:name a)) (assoc a :init init) a)) %))
        (update-in [:encounter :actors] #(reverse (sort-by (fn [x] [(:init x) (:name x)]) %))))))
 
 (re-frame/reg-event-db
