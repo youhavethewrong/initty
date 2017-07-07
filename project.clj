@@ -4,11 +4,10 @@
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.229"]
+                 [org.clojure/clojurescript "1.9.227"]
                  [reagent "0.6.0"]
-                 [re-frame "0.8.0"]
-                 [org.clojure/core.async "0.2.391"]
-                 [re-com "0.8.3"]
+                 [re-frame "0.9.4"]
+                 [re-com "2.1.0"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]]
@@ -17,18 +16,17 @@
 
   :source-paths ["src/clj"]
 
-  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
+  :clean-targets ^{:protect false} ["resources/public/js/compiled"
+                                    "target"
                                     "test/js"]
 
   :figwheel {:css-dirs ["resources/public/css"]}
 
   :profiles
   {:dev
-   {:dependencies [[binaryage/devtools "0.8.2"]]
-
-    :plugins      [[lein-figwheel "0.5.7"]
-                   [lein-doo "0.1.7"]]
-    }}
+   {:dependencies [[binaryage/devtools "0.9.4"]]
+    :plugins      [[lein-figwheel "0.5.8"]
+                   [lein-doo "0.1.7"]]}}
 
   :cljsbuild
   {:builds
@@ -41,9 +39,7 @@
                     :asset-path           "js/compiled/out"
                     :source-map-timestamp true
                     :preloads             [devtools.preload]
-                    :external-config      {:devtools/config {:features-to-install :all}}
-                    }}
-
+                    :external-config      {:devtools/config {:features-to-install :all}}}}
     {:id           "min"
      :source-paths ["src/cljs"]
      :compiler     {:main            initty.core
@@ -52,13 +48,11 @@
                     :optimizations   :advanced
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
-
     {:id           "test"
      :source-paths ["src/cljs" "test/cljs"]
      :compiler     {:main          initty.runner
                     :output-to     "resources/public/js/compiled/test.js"
                     :output-dir    "resources/public/js/compiled/test/out"
-                    :optimizations :none}}
-    ]}
-
+                    :optimizations :none}}]}
+  :mirrors {#".*" {:url "http://psartifacts.qg.com/nexus/content/groups/everything"}}
   )
