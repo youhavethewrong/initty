@@ -4,7 +4,7 @@
   :license {:name "Apache License, Version 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.227"]
+                 [org.clojure/clojurescript "1.9.660"]
                  [reagent "0.6.0"]
                  [re-frame "0.9.4"]
                  [re-com "2.1.0"]
@@ -34,6 +34,7 @@
      :source-paths ["src/cljs"]
      :figwheel     {:on-jsload "initty.core/mount-root"}
      :compiler     {:main                 initty.core
+                    :parallel-build       true
                     :output-to            "resources/public/js/compiled/app.js"
                     :output-dir           "resources/public/js/compiled/out"
                     :asset-path           "js/compiled/out"
@@ -43,6 +44,7 @@
     {:id           "min"
      :source-paths ["src/cljs"]
      :compiler     {:main            initty.core
+                    :parallel-build  true
                     :output-to       "resources/public/js/compiled/app.js"
                     :asset-path      "js/compiled/out"
                     :optimizations   :advanced
@@ -50,8 +52,9 @@
                     :pretty-print    false}}
     {:id           "test"
      :source-paths ["src/cljs" "test/cljs"]
-     :compiler     {:main          initty.runner
-                    :output-to     "resources/public/js/compiled/test.js"
-                    :output-dir    "resources/public/js/compiled/test/out"
+     :compiler     {:main             initty.runner
+                    :parallel-build   true
+                    :output-to        "resources/public/js/compiled/test.js"
+                    :output-dir       "resources/public/js/compiled/test/out"
                     :optimizations :none}}]}
   )
