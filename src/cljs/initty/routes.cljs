@@ -1,7 +1,6 @@
 (ns initty.routes
-    (:require-macros [secretary.core :refer [defroute]])
     (:import goog.History)
-    (:require [secretary.core :as secretary]
+    (:require [secretary.core :as secretary :refer-macros [defroute]]
               [goog.events :as events]
               [goog.history.EventType :as EventType]
               [re-frame.core :as re-frame]))
